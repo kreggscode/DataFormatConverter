@@ -306,113 +306,159 @@ function convert() {
 
 function download() {
     const content = outputText.value;
-    if (!content) return;
+    if (!content || !content.trim()) {
+        showStatus('No content to download.', 'error');
+        return;
+    }
 
     const outputFormat = outputType.value;
-    let filename = `converted.${outputFormat === 'beautify' ? 'json' : outputFormat}`;
+    let filename = '';
     let mimeType = '';
 
     switch (outputFormat) {
         case 'json':
         case 'beautify':
-            mimeType = 'application/json';
             filename = `converted.json`;
+            mimeType = 'application/json';
             break;
         case 'csv':
-            mimeType = 'text/csv';
             filename = `converted.csv`;
+            mimeType = 'text/csv';
             break;
         case 'sql':
-            mimeType = 'application/sql';
             filename = `converted.sql`;
+            mimeType = 'application/sql';
             break;
         default:
-            mimeType = 'text/plain';
             filename = `converted.txt`;
+            mimeType = 'text/plain';
     }
 
     try {
-        const blob = new Blob([content], { type: mimeType });
-        const url = URL.createObjectURL(blob);
+        // Create blob with proper encoding
+        const blob = new Blob([content], {
+            type: mimeType + ';charset=utf-8'
+        });
 
+        // Create download link
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
         a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
 
-        showStatus(`File downloaded as ${filename}`, 'success');
+        // Append to body, click, and remove
+        document.body.appendChild(a);
+
+        // Use a small delay to ensure the element is properly added
+        setTimeout(() => {
+            try {
+                a.click();
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showStatus(`Downloaded as ${filename}`, 'success');
+            } catch (clickError) {
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                throw clickError;
+            }
+        }, 10);
+
     } catch (error) {
+        console.error('Download error:', error);
         showStatus('Download failed. Please try copying the content instead.', 'error');
     }
 }
 
 function copyToClipboard() {
     const content = outputText.value;
-    if (!content) return;
+    if (!content || !content.trim()) {
+        showStatus('No content to copy.', 'error');
+        return;
+    }
 
     try {
-        // Try modern clipboard API first
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(content).then(() => {
-                showStatus('Copied to clipboard!', 'success');
-            }).catch(() => {
-                // Fallback to older method
-                fallbackCopyTextToClipboard(content);
-            });
-        } else {
-            // Fallback for older browsers
-            fallbackCopyTextToClipboard(content);
-        }
+        // For Chrome extensions, we need to use the fallback method
+        // as the modern clipboard API might not work in extension popups
+        fallbackCopyTextToClipboard(content);
     } catch (error) {
         showStatus('Copy failed. Please select and copy manually.', 'error');
     }
 }
 
 function fallbackCopyTextToClipboard(text) {
+    // Create a temporary textarea for copying
     const textArea = document.createElement('textarea');
     textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
+    textArea.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: -9999px;
+        opacity: 0;
+        pointer-events: none;
+        z-index: -1;
+    `;
 
     try {
-        document.execCommand('copy');
-        showStatus('Copied to clipboard!', 'success');
-    } catch (error) {
-        showStatus('Copy failed. Please select and copy manually.', 'error');
-    }
+        document.body.appendChild(textArea);
 
-    document.body.removeChild(textArea);
+        // Select the text
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, text.length);
+
+        // Try to copy
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showStatus('Copied to clipboard!', 'success');
+        } else {
+            throw new Error('Copy command failed');
+        }
+    } catch (error) {
+        console.error('Copy failed:', error);
+        showStatus('Copy failed. Please select and copy the text manually.', 'error');
+    } finally {
+        // Clean up
+        if (document.body.contains(textArea)) {
+            document.body.removeChild(textArea);
+        }
+    }
 }
 
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Check file size (limit to 1MB for extension)
-    if (file.size > 1024 * 1024) {
-        showStatus('File too large. Please use a file smaller than 1MB.', 'error');
+    // Check file size (limit to 2MB for extension)
+    if (file.size > 2 * 1024 * 1024) {
+        showStatus('File too large. Please use a file smaller than 2MB.', 'error');
+        return;
+    }
+
+    // Check file type
+    const validTypes = ['text/csv', 'text/plain', 'application/json', 'application/sql'];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(csv|json|sql|txt)$/i)) {
+        showStatus('Please select a valid file type: CSV, JSON, SQL, or TXT.', 'error');
         return;
     }
 
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
-            inputText.value = e.target.result;
-            showStatus(`File "${file.name}" loaded successfully!`, 'success');
+            const content = e.target.result;
+            if (content && content.trim()) {
+                inputText.value = content;
+                inputText.focus();
+                showStatus(`File "${file.name}" loaded successfully!`, 'success');
+            } else {
+                showStatus('File appears to be empty.', 'error');
+            }
         } catch (error) {
-            showStatus('Error reading file content', 'error');
+            showStatus('Error reading file content. Please try again.', 'error');
         }
     };
     reader.onerror = function() {
-        showStatus('Error reading file. Please try again.', 'error');
+        showStatus('Error reading file. Please try again or paste content directly.', 'error');
     };
 
     try {

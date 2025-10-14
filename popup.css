@@ -168,17 +168,16 @@ body {
     text-transform: uppercase;
 }
 
-/* Format Selection Cards - CENTERED HORIZONTAL */
+/* Format Selection Cards - PERFECTLY CENTERED */
 .format-cards {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    margin-bottom: 30px !important;
+    margin: 0 auto 30px auto !important;
     gap: 15px !important;
-    width: 100% !important;
-    flex-wrap: nowrap !important;
-    max-width: 400px !important;
+    width: fit-content !important;
+    max-width: 450px !important;
     position: relative !important;
     z-index: 100 !important;
 }
@@ -503,22 +502,26 @@ body {
 /* Output Actions */
 .output-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 .output-action-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: #ffffff;
-    padding: 10px 12px;
-    border-radius: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 40px;
-    font-size: 14px;
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 .output-action-btn:hover:not(:disabled) {
