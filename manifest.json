@@ -5,7 +5,10 @@
   "description": "Convert between CSV, JSON, and SQL formats with ease",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "downloads",
+    "fileSystem",
+    "scripting"
   ],
   "action": {
     "default_popup": "popup.html",

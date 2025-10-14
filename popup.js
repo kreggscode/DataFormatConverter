@@ -335,34 +335,57 @@ function download() {
     }
 
     try {
-        // For Chrome extensions, we need a more reliable download method
+        // For Chrome extensions, use a data URL approach
         const blob = new Blob([content], {
             type: mimeType + ';charset=utf-8'
         });
 
-        // Use Chrome's download API if available (for extensions)
-        if (chrome && chrome.downloads) {
-            const url = URL.createObjectURL(blob);
-            chrome.downloads.download({
-                url: url,
-                filename: filename,
-                saveAs: false
-            }, function(downloadId) {
-                if (chrome.runtime.lastError) {
-                    console.error('Chrome download failed:', chrome.runtime.lastError);
-                    fallbackDownload(url, filename);
-                } else {
-                    showStatus(`✅ Downloaded as ${filename}`, 'success');
-                    URL.revokeObjectURL(url);
-                }
-            });
-        } else {
-            // Fallback to traditional method
-            fallbackDownload(URL.createObjectURL(blob), filename);
-        }
+        // Create data URL
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+
+            // Use Chrome extension download API if available
+            if (chrome && chrome.downloads) {
+                chrome.downloads.download({
+                    url: dataUrl,
+                    filename: filename,
+                    saveAs: false
+                }, function(downloadId) {
+                    if (chrome.runtime.lastError) {
+                        console.error('Chrome download failed:', chrome.runtime.lastError);
+                        manualDownload(dataUrl, filename);
+                    } else {
+                        showStatus(`✅ Downloaded as ${filename}`, 'success');
+                    }
+                });
+            } else {
+                manualDownload(dataUrl, filename);
+            }
+        };
+        reader.readAsDataURL(blob);
 
     } catch (error) {
         console.error('Download error:', error);
+        showStatus('Download failed. Please try copying the content instead.', 'error');
+    }
+}
+
+function manualDownload(dataUrl, filename) {
+    try {
+        // Create a temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = filename;
+        link.style.display = 'none';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showStatus(`✅ Downloaded as ${filename}`, 'success');
+    } catch (error) {
+        console.error('Manual download failed:', error);
         showStatus('Download failed. Please try copying the content instead.', 'error');
     }
 }
@@ -409,20 +432,51 @@ function copyToClipboard() {
     }
 
     try {
-        // Try multiple methods for maximum compatibility
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            // Modern clipboard API (may not work in extensions)
-            navigator.clipboard.writeText(content).then(() => {
-                showStatus('✅ Copied to clipboard!', 'success');
-            }).catch(() => {
-                fallbackCopyTextToClipboard(content);
+        // For Chrome extensions, use a more direct approach
+        if (chrome && chrome.scripting) {
+            // Use Chrome extension API if available
+            chrome.scripting.executeScript({
+                target: { tabId: -1 }, // Current extension popup
+                func: (text) => {
+                    navigator.clipboard.writeText(text).then(() => {
+                        return true;
+                    }).catch(() => {
+                        // Create temporary element for copying
+                        const textArea = document.createElement('textarea');
+                        textArea.value = text;
+                        textArea.style.position = 'absolute';
+                        textArea.style.left = '-9999px';
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        const success = document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        return success;
+                    });
+                },
+                args: [content]
+            }, (results) => {
+                if (results && results[0] && results[0].result) {
+                    showStatus('✅ Copied to clipboard!', 'success');
+                } else {
+                    manualCopyFallback(content);
+                }
             });
         } else {
-            // Fallback method for extensions
-            fallbackCopyTextToClipboard(content);
+            manualCopyFallback(content);
         }
     } catch (error) {
         console.error('Copy error:', error);
+        manualCopyFallback(content);
+    }
+}
+
+function manualCopyFallback(content) {
+    try {
+        // Manual approach - select the text and instruct user
+        outputText.focus();
+        outputText.select();
+        showStatus('✅ Text selected! Press Ctrl+C (Cmd+C on Mac) to copy.', 'success');
+    } catch (error) {
         showStatus('Copy failed. Please select and copy the text manually.', 'error');
     }
 }
@@ -566,29 +620,56 @@ convertBtn.addEventListener('click', convert);
 downloadBtn.addEventListener('click', download);
 copyBtn.addEventListener('click', copyToClipboard);
 uploadBtn.addEventListener('click', () => {
-    // For Chrome extensions, we need to use a more reliable approach
     try {
-        // Create a temporary file input if the hidden one doesn't work
-        const tempInput = document.createElement('input');
-        tempInput.type = 'file';
-        tempInput.accept = '.csv,.json,.sql,.txt';
-        tempInput.multiple = true;
-        tempInput.style.display = 'none';
+        // For Chrome extensions, we need a completely different approach
+        if (chrome && chrome.fileSystem) {
+            // Use Chrome File System API if available
+            chrome.fileSystem.chooseEntry({
+                type: 'openFile',
+                accepts: [
+                    { description: 'Data files', extensions: ['csv', 'json', 'sql', 'txt'] }
+                ]
+            }, function(fileEntry) {
+                if (fileEntry) {
+                    fileEntry.file(function(file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const content = e.target.result;
+                                if (content && content.trim()) {
+                                    inputText.value = content;
+                                    inputText.focus();
+                                    inputText.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    showStatus(`File "${file.name}" loaded successfully!`, 'success');
+                                } else {
+                                    showStatus('File appears to be empty.', 'error');
+                                }
+                            } catch (error) {
+                                showStatus('Error reading file content.', 'error');
+                            }
+                        };
+                        reader.onerror = function() {
+                            showStatus('Error reading file.', 'error');
+                        };
+                        reader.readAsText(file);
+                    });
+                }
+            });
+        } else {
+            // Fallback to traditional file input
+            const tempInput = document.createElement('input');
+            tempInput.type = 'file';
+            tempInput.accept = '.csv,.json,.sql,.txt';
+            tempInput.style.display = 'none';
 
-        // Handle file selection
-        tempInput.onchange = function(e) {
-            if (e.target.files && e.target.files[0]) {
+            tempInput.onchange = function(e) {
                 handleFileUpload(e);
-                // Clean up
                 document.body.removeChild(tempInput);
-            }
-        };
+            };
 
-        document.body.appendChild(tempInput);
-
-        // Try to trigger the file dialog
-        tempInput.click();
-
+            document.body.appendChild(tempInput);
+            tempInput.click();
+        }
     } catch (error) {
         console.error('Upload failed:', error);
         showStatus('Upload not available. Please drag and drop a file instead.', 'error');
