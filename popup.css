@@ -170,7 +170,8 @@ body {
 
 /* Format Selection Cards */
 .format-cards {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 30px;
@@ -576,7 +577,7 @@ body {
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 500px) {
     body {
         width: 450px;
     }
@@ -590,7 +591,7 @@ body {
     }
 
     .format-cards {
-        flex-direction: column;
+        flex-direction: column !important;
         gap: 20px;
     }
 
