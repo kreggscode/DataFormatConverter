@@ -215,6 +215,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ for developers, by developers**
+**Made with ❤️ for developers, by KREGGSCODE**
 
 [🌟 Star us on GitHub](https://github.com/kreggscode/DataMorphPro) • [📖 Documentation](https://github.com/kreggscode/DataMorphPro/wiki) • [🎯 Live Demo](https://kreggscode.github.io/DataMorphPro)
