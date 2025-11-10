@@ -5,7 +5,7 @@
 ### ✨ Transform Data with Style ✨
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blueviolet.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)]([[https://chrome.google.com/webstore](https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en)](https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en))
+[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)]([[https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en](https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en)](https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en))
 [![Live Demo](https://img.shields.io/badge/Live-Demo-FF1493?style=for-the-badge&logo=vercel&logoColor=white)](https://kreggscode.github.io/DataMorphPro)
 [![GitHub Stars](https://img.shields.io/github/stars/kreggscode/DataMorphPro?style=for-the-badge&logo=github)](https://github.com/kreggscode/DataMorphPro)
 
@@ -13,7 +13,7 @@
 
 *Built with modern web technologies • Lightning fast • Visually stunning*
 
-[🚀 Live Demo](https://kreggscode.github.io/DataMorphPro) • [📦 Chrome Extension]([https://chrome.google.com/webstore](https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en)) • [📖 Documentation](https://github.com/kreggscode/DataMorphPro/wiki)
+[🚀 Live Demo](https://kreggscode.github.io/DataMorphPro) • [📦 Chrome Extension]([https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en](https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en)) • [📖 Documentation](https://github.com/kreggscode/DataMorphPro/wiki)
 
 </div>
 
