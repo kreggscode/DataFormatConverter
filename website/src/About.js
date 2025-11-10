@@ -134,6 +134,9 @@ function About() {
             DataMorphPro is also available as a Chrome browser extension for even faster access.
             Install it from the Chrome Web Store and convert data directly from any webpage.
           </p>
+          <a href="https://chromewebstore.google.com/detail/datamorphpro/kkebolkhjgkmomkegigidfkgmpodhllg?authuser=0&hl=en" target="_blank" rel="noopener noreferrer" className="extension-link">
+            🚀 Install Chrome Extension
+          </a>
           <div className="extension-features">
             <div className="ext-feature">
               <span className="ext-icon">📎</span>
